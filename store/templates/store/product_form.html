@@ -1,0 +1,37 @@
+{% extends 'store/base.html' %}
+
+{% block title %}{{ title }} | Django Store{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="error-messages">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    {% for field in form %}
+    <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+    <ul class="errorlist">
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    </p>
+    {% endfor %}
+
+    <button type="submit" class="btn">Save</button>
+    <a href="{% url 'store:product_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
