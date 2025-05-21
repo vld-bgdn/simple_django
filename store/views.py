@@ -1,40 +1,60 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from .models import Product
 from .forms import ProductForm
 
 
-def product_list(request):
-    products = Product.objects.filter(is_published=True)
-    return render(request, "store/product_list.html", {"products": products})
+class ProductListView(ListView):
+    model = Product
+    template_name = "store/product_list.html"
+    context_object_name = "products"
+
+    def get_queryset(self):
+        return Product.objects.filter(is_published=True)
 
 
-def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    return render(request, "store/product_detail.html", {"product": product})
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "store/product_detail.html"
+    context_object_name = "product"
 
 
-def product_new(request):
-    if request.method == "POST":
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return redirect("store:product_detail", pk=product.pk)
-    else:
-        form = ProductForm()
-    return render(
-        request, "store/product_form.html", {"form": form, "title": "Add New Product"}
-    )
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "store/product_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("store:product_detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Add New Product"
+        return context
 
 
-def product_edit(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
-        if form.is_valid():
-            product = form.save()
-            return redirect("store:product_detail", pk=product.pk)
-    else:
-        form = ProductForm(instance=product)
-    return render(
-        request, "store/product_form.html", {"form": form, "title": "Edit Product"}
-    )
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "store/product_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("store:product_detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Edit Product"
+        return context
+
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = "store/product_confirm_delete.html"
+    success_url = reverse_lazy("store:product_list")
+    context_object_name = "product"

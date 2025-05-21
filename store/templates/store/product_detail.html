@@ -13,6 +13,7 @@
 
     <div class="actions">
         <a href="{% url 'store:product_edit' pk=product.pk %}" class="btn">Edit</a>
+        <a href="{% url 'store:product_delete' product.pk %}" class="btn">Delete</a>
         <a href="{% url 'store:product_list' %}" class="btn btn-secondary">Back to list</a>
     </div>
 </div>
