@@ -8,6 +8,7 @@ from django.views.generic import (
 )
 from .models import Product
 from .forms import ProductForm
+from .tasks import log_new_product_task
 
 
 class ProductListView(ListView):
@@ -29,6 +30,21 @@ class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = "store/product_form.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        try:
+            log_new_product_task.delay(
+                product_name=self.object.name,
+                product_id=self.object.id,
+                category_name=self.object.category.name,
+                price=str(self.object.price),
+            )
+        except Exception as e:
+            print(f"Failed to queue Celery task: {e}")
+
+        return response
 
     def get_success_url(self):
         return reverse_lazy("store:product_detail", kwargs={"pk": self.object.pk})

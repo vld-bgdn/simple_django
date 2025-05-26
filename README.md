@@ -33,6 +33,14 @@ python manage.py migrate
 ```
 python manage.py createsuperuser
 ```
+- Start Redis server through docker
+```
+docker-compose up -d
+```
+- Start Celery
+```
+celery -A config worker --loglevel=info
+```
 - Start the Django server:
 ```
 python manage.py runserver
